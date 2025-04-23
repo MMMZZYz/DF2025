@@ -1,0 +1,6 @@
+#allure执行拿报告
+
+pytest testcases/ --alluredir=allure-results -p allure_pytest
+allure generate allure-results -o allure-report --clean
+allure open allure-report
+
