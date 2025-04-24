@@ -4,18 +4,19 @@ import requests
 import time
 import zipfile
 import re
+import shutil
 
 # 企业微信 Webhook 地址
 WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-669a-48ea-9499-bca101128f3f"
 
-# 公网报告访问地址（替换为你自己的 IP 或域名）
-REPORT_URL = "http://118.178.189.83:8000"
+# 报告公网地址（你的公网 IP 或绑定的域名）
+REPORT_URL = "http://118.178.189.83"
 
 def run_pytest():
     print("✅ 开始运行测试用例...")
     result = subprocess.run(
         ["pytest", "testcases/", "--alluredir=allure-results", "-p", "allure_pytest"],
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     stdout = result.stdout.decode()
     stderr = result.stderr.decode()
@@ -23,13 +24,9 @@ def run_pytest():
     print("📤 pytest 错误：\n", stderr)
     if result.returncode != 0:
         print("❌ 测试运行失败")
-
     return stdout
 
 def parse_summary_from_output(output):
-    """
-    从 pytest 输出中提取用例执行统计信息
-    """
     passed = failed = skipped = duration = "0"
     summary_line = re.search(r"=+.+?(\d+)\s+passed.*?in\s+([\d\.]+)s", output)
     if summary_line:
@@ -49,21 +46,19 @@ def parse_summary_from_output(output):
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
     result = subprocess.run(
-        ["allure", "generate", "allure-results", "-o", "allure-report", "--clean"],
-        shell=True
+        ["allure", "generate", "allure-results", "-o", "allure-report", "--clean"]
     )
     if result.returncode != 0:
         print("❌ 报告生成失败")
         exit(1)
 
-def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
-    print("📦 打包 HTML 报告...")
-    with zipfile.ZipFile(zip_file, 'w') as zipf:
-        for foldername, subfolders, filenames in os.walk(report_dir):
-            for filename in filenames:
-                file_path = os.path.join(foldername, filename)
-                arc_path = os.path.relpath(file_path, report_dir)
-                zipf.write(file_path, arc_path)
+def deploy_report_to_nginx():
+    print("🚀 部署报告到 Nginx ...")
+    nginx_html_dir = "/usr/share/nginx/html"
+    if os.path.exists(nginx_html_dir):
+        shutil.rmtree(nginx_html_dir)
+    shutil.copytree("allure-report", nginx_html_dir)
+    print("✅ 部署成功，可通过公网访问查看报告")
 
 def send_wechat_notification(passed, failed, skipped, duration):
     print("📨 正在发送企业微信通知...")
@@ -94,6 +89,6 @@ if __name__ == "__main__":
     pytest_output = run_pytest()
     passed, failed, skipped, duration = parse_summary_from_output(pytest_output)
     generate_allure_report()
-    zip_report()
+    deploy_report_to_nginx()
     send_wechat_notification(passed, failed, skipped, duration)
     print("🎉 所有步骤完成！")
