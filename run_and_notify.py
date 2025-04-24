@@ -39,6 +39,8 @@ def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
 def send_wechat_notification():
     print("📨 正在发送企业微信通知...")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    
+    report_url = "http://118.178.189.83:8000"  # ← 修改为你的公网 IP 或域名
 
     data = {
         "msgtype": "markdown",
@@ -46,7 +48,7 @@ def send_wechat_notification():
             "content": f"""## 🧪 自动化测试完成  
 - 执行时间：{timestamp}  
 - 报告类型：Allure 报告  
-- [👉 点击查看报告（本地需先执行 `allure serve`）](http://localhost:52345)  
+- [👉 点击查看报告]({report_url})  
 """
         }
     }
@@ -56,6 +58,7 @@ def send_wechat_notification():
         print("✅ 企业微信通知已发送")
     else:
         print(f"❌ 企业微信发送失败: {resp.text}")
+
 
 if __name__ == "__main__":
     run_pytest()
