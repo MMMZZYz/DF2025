@@ -9,6 +9,7 @@ import re
 WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-669a-48ea-9499-bca101128f3f"
 
 def run_pytest():
+    """运行 pytest 测试用例并返回执行结果和统计信息"""
     print("✅ 开始运行测试用例...")
     result = subprocess.run(
         ["pytest", "testcases/", "--alluredir=allure-results", "-p", "allure_pytest"],
@@ -29,10 +30,11 @@ def run_pytest():
 
     return result.returncode, stats, exec_time
 
-def generate_allure_report():
-    print("✅ 生成 Allure 报告...")
+def generate_allure_report(output_dir="allure-report"):
+    """生成 Allure 报告到指定目录"""
+    print(f"✅ 生成 Allure 报告到 {output_dir}...")
     result = subprocess.run(
-        ["/usr/bin/allure", "generate", "allure-results", "-o", "allure-report", "--clean"],
+        ["/usr/bin/allure", "generate", "allure-results", "-o", output_dir, "--clean"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
@@ -44,7 +46,8 @@ def generate_allure_report():
         exit(1)
 
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
-    print("📦 打包 HTML 报告...")
+    """将 Allure 报告打包成 zip 文件"""
+    print(f"📦 打包 {report_dir} 为 ZIP 文件...")
     with zipfile.ZipFile(zip_file, 'w') as zipf:
         for foldername, subfolders, filenames in os.walk(report_dir):
             for filename in filenames:
@@ -53,6 +56,7 @@ def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
                 zipf.write(file_path, arc_path)
 
 def send_wechat_notification(stats, exec_time):
+    """发送企业微信通知"""
     print("📨 正在发送企业微信通知...")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     report_url = "http://118.178.189.83:8000"  # 修改为你的公网地址
@@ -76,8 +80,17 @@ def send_wechat_notification(stats, exec_time):
         print(f"❌ 企业微信发送失败: {resp.text}")
 
 if __name__ == "__main__":
+    # 运行 pytest 并获取结果
     returncode, stats, exec_time = run_pytest()
-    generate_allure_report()
-    zip_report()
+
+    # 生成 Allure 报告并指定输出目录
+    output_dir = "/var/www/allure-report"  # 修改为你希望保存报告的目录
+    generate_allure_report(output_dir)
+
+    # 打包报告
+    zip_report(output_dir)
+
+    # 发送企业微信通知
     send_wechat_notification(stats, exec_time)
+
     print("🎉 所有步骤完成！")
