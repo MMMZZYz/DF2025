@@ -32,8 +32,7 @@ def run_pytest():
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
     result = subprocess.run(
-        "allure generate allure-results -o allure-report --clean",
-        shell=True,
+        ["/usr/bin/allure", "generate", "allure-results", "-o", "allure-report", "--clean"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
