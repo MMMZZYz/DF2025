@@ -36,16 +36,19 @@ def run_pytest():
 
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
-    result = subprocess.run(
-        ["allure", "generate", "allure-results", "-o", "allure-report", "--clean"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-    if result.returncode != 0:
+    try:
+        result = subprocess.run(
+            "allure generate allure-results -o allure-report --clean",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True
+        )
+        print(result.stdout.decode())
+    except subprocess.CalledProcessError as e:
         print("❌ 报告生成失败")
-        print(result.stderr.decode())
+        print(e.stderr.decode())
         exit(1)
-
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
     print("📦 打包 HTML 报告...")
     with zipfile.ZipFile(zip_file, 'w') as zipf:
