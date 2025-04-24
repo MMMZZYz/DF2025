@@ -3,9 +3,9 @@ import subprocess
 import requests
 import time
 import zipfile
-import re
 
 WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-669a-48ea-9499-bca101128f3f"
+REPORT_URL = "http://118.178.189.83:8000"
 
 def run_pytest():
     print("✅ 开始运行测试用例...")
@@ -15,40 +15,32 @@ def run_pytest():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
-    output = result.stdout.decode()
-    error_output = result.stderr.decode()
-    print("📤 pytest 输出：\n", output)
-    print("📤 pytest 错误：\n", error_output)
-    
-    match = re.search(r"=+\\s*(\\d+) passed.*?in ([\\d.]+)s", output)
-    total = passed = failed = duration = 0
-    if match:
-        passed = int(match.group(1))
-        total = passed
-        duration = float(match.group(2))
-    else:
-        match2 = re.search(r"(\\d+) failed, (\\d+) passed", output)
-        if match2:
-            failed, passed = int(match2.group(1)), int(match2.group(2))
-            total = failed + passed
+    print("📤 pytest 输出：\n", result.stdout.decode())
+    print("📤 pytest 错误：\n", result.stderr.decode())
 
-    return total, passed, failed, duration
+    # 解析执行结果
+    output = result.stdout.decode()
+    total = int(output.split("collected ")[1].split(" item")[0]) if "collected " in output else 0
+    passed = output.count("PASSED") + output.count(".")  # 简易统计
+    failed = output.count("FAILED") + output.count("F")
+
+    print(f"✅ 共执行用例: {total}，通过: {passed}，失败: {failed}")
+    return total, passed, failed
 
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
-    try:
-        result = subprocess.run(
-            "allure generate allure-results -o allure-report --clean",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True
-        )
-        print(result.stdout.decode())
-    except subprocess.CalledProcessError as e:
+    result = subprocess.run(
+        "allure generate allure-results -o allure-report --clean",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    print(result.stdout.decode())
+    if result.returncode != 0:
         print("❌ 报告生成失败")
-        print(e.stderr.decode())
+        print(result.stderr.decode())
         exit(1)
+
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
     print("📦 打包 HTML 报告...")
     with zipfile.ZipFile(zip_file, 'w') as zipf:
@@ -58,22 +50,19 @@ def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
                 arc_path = os.path.relpath(file_path, report_dir)
                 zipf.write(file_path, arc_path)
 
-def send_wechat_notification(total, passed, failed, duration):
+def send_wechat_notification(total, passed, failed):
     print("📨 正在发送企业微信通知...")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    report_url = "http://118.178.189.83:8000"
 
     data = {
         "msgtype": "markdown",
         "markdown": {
             "content": f"""## 🧪 自动化测试完成  
 - 执行时间：{timestamp}  
-- 报告类型：Allure 报告  
 - 总用例数：{total}  
-- ✅ 成功用例：{passed}  
-- ❌ 失败用例：{failed}  
-- ⏱️ 执行耗时：{duration}s  
-- [👉 点击查看报告]({report_url})  
+- ✅ 通过：{passed}  
+- ❌ 失败：{failed}  
+- [👉 点击查看报告]({REPORT_URL})  
 """
         }
     }
@@ -85,8 +74,8 @@ def send_wechat_notification(total, passed, failed, duration):
         print(f"❌ 企业微信发送失败: {resp.text}")
 
 if __name__ == "__main__":
-    total, passed, failed, duration = run_pytest()
+    total, passed, failed = run_pytest()
     generate_allure_report()
     zip_report()
-    send_wechat_notification(total, passed, failed, duration)
-    print("🎉 所有步骤完成！你可以运行 `allure serve allure-results` 查看报告。")
+    send_wechat_notification(total, passed, failed)
+    print("🎉 所有步骤完成！")
