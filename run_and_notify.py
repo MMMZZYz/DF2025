@@ -29,18 +29,20 @@ def run_pytest():
 
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
+    # 注意这里是字符串形式调用 shell 命令
     command = "allure generate allure-results -o allure-report --clean"
     result = subprocess.run(
         command,
-        shell=True,
+        shell=True,                # 用 shell 执行命令行字符串
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
-    print(result.stdout.decode())
-    print(result.stderr.decode())
+    print("📤 Allure 输出：", result.stdout.decode())
+    print("📤 Allure 错误输出：", result.stderr.decode())
     if result.returncode != 0:
         print("❌ 报告生成失败")
         exit(1)
+
 
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
     print("📦 打包 HTML 报告...")
