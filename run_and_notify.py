@@ -30,11 +30,10 @@ def run_pytest():
 
     return result.returncode, stats, exec_time
 
-def generate_allure_report(output_dir="allure-report"):
-    """生成 Allure 报告到指定目录"""
-    print(f"✅ 生成 Allure 报告到 {output_dir}...")
+def generate_allure_report():
+    print("✅ 生成 Allure 报告...")
     result = subprocess.run(
-        ["/usr/bin/allure", "generate", "allure-results", "-o", output_dir, "--clean"],
+        ["/usr/bin/allure", "generate", "allure-results", "-o", "/var/www/allure-report", "--clean"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
@@ -44,6 +43,7 @@ def generate_allure_report(output_dir="allure-report"):
     if result.returncode != 0:
         print("❌ 报告生成失败")
         exit(1)
+
 
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
     """将 Allure 报告打包成 zip 文件"""
