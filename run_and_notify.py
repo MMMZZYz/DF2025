@@ -29,16 +29,17 @@ def run_pytest():
 
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
+    command = "allure generate allure-results -o allure-report --clean"
     result = subprocess.run(
-        "allure generate allure-results -o allure-report --clean",
+        command,
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
     print(result.stdout.decode())
+    print(result.stderr.decode())
     if result.returncode != 0:
         print("❌ 报告生成失败")
-        print(result.stderr.decode())
         exit(1)
 
 def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
