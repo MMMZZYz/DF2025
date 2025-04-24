@@ -12,6 +12,12 @@ WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-
 # 报告公网地址（你的公网 IP 或绑定的域名）
 REPORT_URL = "http://118.178.189.83"
 
+# allure 命令的绝对路径（修改为你的实际路径）
+allure_path = "/usr/bin/allure"  # 修改为实际的路径
+
+# 确保脚本在正确的工作目录下执行
+os.chdir("/root/DF2025")  # 修改为你的项目根目录
+
 def run_pytest():
     print("✅ 开始运行测试用例...")
     result = subprocess.run(
@@ -46,8 +52,13 @@ def parse_summary_from_output(output):
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
     result = subprocess.run(
-        ["allure", "generate", "allure-results", "-o", "allure-report", "--clean"]
+        [allure_path, "generate", "allure-results", "-o", "allure-report", "--clean"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
+    stdout = result.stdout.decode()
+    stderr = result.stderr.decode()
+    print("📤 allure generate 输出：\n", stdout)
+    print("📤 allure generate 错误：\n", stderr)
     if result.returncode != 0:
         print("❌ 报告生成失败")
         exit(1)
