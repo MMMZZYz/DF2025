@@ -10,9 +10,11 @@ WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-
 def run_pytest():
     print("✅ 开始运行测试用例...")
     result = subprocess.run(
-        ["pytest", "testcases/", "--alluredir=allure-results", "-p", "allure_pytest"],
-        shell=True
+    ["allure", "generate", "allure-results", "-o", "allure-report", "--clean"],
+    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
+    print("Allure 输出：", result.stdout.decode())
+    print("Allure 错误输出：", result.stderr.decode())
     if result.returncode != 0:
         print("❌ 测试运行失败")
         exit(1)
