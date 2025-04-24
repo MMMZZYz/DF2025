@@ -5,6 +5,9 @@ import time
 import zipfile
 import re
 import shutil
+import sys
+print("Python 环境:", sys.executable)
+os.environ["PATH"] += ":/usr/bin"  # 添加 allure 所在的路径
 
 # 企业微信 Webhook 地址
 WECHAT_WEBHOOK = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c93abe73-669a-48ea-9499-bca101128f3f"
@@ -52,17 +55,16 @@ def parse_summary_from_output(output):
 def generate_allure_report():
     print("✅ 生成 Allure 报告...")
     result = subprocess.run(
-        [allure_path, "generate", "allure-results", "-o", "allure-report", "--clean"],
+        ["sh", "-c", "allure generate allure-results/ -o allure-report --clean"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     stdout = result.stdout.decode()
     stderr = result.stderr.decode()
-    print("📤 allure generate 输出：\n", stdout)
-    print("📤 allure generate 错误：\n", stderr)
+    print("📤 allure 输出：\n", stdout)
+    print("📤 allure 错误：\n", stderr)
     if result.returncode != 0:
         print("❌ 报告生成失败")
         exit(1)
-
 def deploy_report_to_nginx():
     print("🚀 部署报告到 Nginx ...")
     nginx_html_dir = "/usr/share/nginx/html"
