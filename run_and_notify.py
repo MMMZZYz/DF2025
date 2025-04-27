@@ -31,8 +31,6 @@ def clean_allure_results():
 
 def run_pytest():
     """运行 pytest 测试用例并返回执行结果和统计信息"""
-    clean_allure_results()
-
     print("✅ 开始运行测试用例...")
     result = subprocess.run(
         ["pytest", "testcases/", "--alluredir", ALLURE_RESULTS_DIR, "-p", "allure_pytest"],
@@ -44,20 +42,11 @@ def run_pytest():
     print("📤 pytest 输出：\n", output)
     print("📤 pytest 错误：\n", error)
 
-    # 提取统计信息
-    pass_count = fail_count = skip_count = 0
-
-    match = re.search(r"=+.*?(\d+)\s+passed.*?(\d+)?\s+failed.*?(\d+)?\s+skipped.*?=+", output, re.DOTALL)
-    if match:
-        groups = match.groups()
-        pass_count = int(groups[0]) if groups[0] else 0
-        fail_count = int(groups[1]) if groups[1] else 0
-        skip_count = int(groups[2]) if groups[2] else 0
+    pass_count, fail_count, skip_count = parse_pytest_output(output)
 
     # 提取执行时间
     time_match = re.search(r"in ([0-9.]+)s", output)
-    exec_time_sec = float(time_match.group(1)) if time_match else 0
-    exec_time = format_exec_time(exec_time_sec)
+    exec_time = time_match.group(1) + " 秒" if time_match else "未知"
 
     return result.returncode, pass_count, fail_count, skip_count, exec_time
 
