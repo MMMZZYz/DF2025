@@ -1,3 +1,4 @@
+import allure
 from utils.request_util import request_with_allure
 
 @allure.title("测试 1 + 1")
