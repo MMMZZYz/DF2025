@@ -7,7 +7,7 @@ from apis.drp_api import (
     orderbill_submit_do,
 )
 
-def test_drp_order_flow(session):
+def test_drp_orderbill_flow(session):
     # 第一步：保存订货单
     save_resp = orderbill_save_do(session)
     bill_id = save_resp.json()["resultObject"]["billId"]
