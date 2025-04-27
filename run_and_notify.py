@@ -44,7 +44,7 @@ def generate_allure_report(output_dir="/var/www/allure-report"):
         print("❌ 报告生成失败")
         exit(1)
 
-def zip_report(report_dir="allure-report", zip_file="allure-report.zip"):
+def zip_report(report_dir="/var/www/allure-report", zip_file="allure-report.zip"):
     """将 Allure 报告打包成 zip 文件"""
     print(f"📦 打包 {report_dir} 为 ZIP 文件...")
     with zipfile.ZipFile(zip_file, 'w') as zipf:
@@ -58,7 +58,7 @@ def send_wechat_notification(stats, exec_time):
     """发送企业微信通知"""
     print("📨 正在发送企业微信通知...")
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    report_url = "http://118.178.189.83:8000"  # 修改为你的公网地址
+    report_url = "http://118.178.189.83/allure/"  # 修改为你的公网地址
 
     data = {
         "msgtype": "markdown",
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     generate_allure_report("/var/www/allure-report")
 
     # 打包报告
-    zip_report(output_dir)
+    zip_report(output_dir, "allure-report.zip")
 
     # 发送企业微信通知
     send_wechat_notification(stats, exec_time)
