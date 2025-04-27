@@ -28,6 +28,25 @@ def clean_allure_results():
             except Exception as e:
                 print(f"⚠️ 删除 {file_path} 失败：{e}")
     print("🧹 已清空 allure-results 目录")
+def parse_pytest_output(output):
+    """解析pytest输出，提取通过/失败/跳过数量"""
+    pass_count = 0
+    fail_count = 0
+    skip_count = 0
+
+    # 匹配 '2 passed, 1 failed, 1 skipped' 这种格式
+    pass_match = re.search(r"(\d+)\s+passed", output)
+    fail_match = re.search(r"(\d+)\s+failed", output)
+    skip_match = re.search(r"(\d+)\s+skipped", output)
+
+    if pass_match:
+        pass_count = int(pass_match.group(1))
+    if fail_match:
+        fail_count = int(fail_match.group(1))
+    if skip_match:
+        skip_count = int(skip_match.group(1))
+
+    return pass_count, fail_count, skip_count
 
 def run_pytest():
     """运行 pytest 测试用例并返回执行结果和统计信息"""
