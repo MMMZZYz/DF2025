@@ -1,4 +1,5 @@
 # testcases/test_drp_api.py
+from utils.request_util import request_with_allure
 
 from apis.drp_api import (
     orderapplybill_save_do,

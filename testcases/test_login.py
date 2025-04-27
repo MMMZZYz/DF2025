@@ -1,3 +1,4 @@
+from utils.request_util import request_with_allure
 import requests
 
 def test_get_sum_brand_stock():
