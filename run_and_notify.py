@@ -57,8 +57,9 @@ def zip_report(report_dir="/var/www/allure-report", zip_file="allure-report.zip"
 def send_wechat_notification(stats, exec_time):
     """发送企业微信通知"""
     print("📨 正在发送企业微信通知...")
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    report_url = "http://118.178.189.83/allure/"  # 修改为你的公网地址
+    timestamp = time.strftime("%Y%m%d%H%M%S")  # 生成时间戳，比如20250427220000
+    report_url = f"http://118.178.189.83/allure/?t={timestamp}"  # 在后面加个 ?t=时间戳
+
 
     data = {
         "msgtype": "markdown",
